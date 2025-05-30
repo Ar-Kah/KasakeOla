@@ -1,5 +1,4 @@
 #include <iostream>
-#include <stdint.h>
 
 using namespace std;
 
@@ -10,7 +9,7 @@ uint64_t whiteKnights = 0x0000000000000042;
 uint64_t whiteRooks =   0x0000000000000081;
 uint64_t whiteQueens =  0x0000000000000008;
 uint64_t whiteKing =    0x0000000000000010;
-
+  
 // black chesspieces
 uint64_t blackPawns =   0x00ff000000000000;
 uint64_t blackBishops = 0x2400000000000000;
@@ -21,10 +20,10 @@ uint64_t blackKing =    0x1000000000000000;
 
 uint64_t FILE_A = 0x0101010101010101;
 uint64_t FILE_H = 0x8080808080808080;
+uint64_t RANK_2 = 0x000000000000ff00;
 
 char getPieceCharacter(uint64_t square) {
     uint64_t mask = 1ULL << square;
-
     // check white pieces
     if (mask & whitePawns)      return 'P';
     if (mask & whiteKnights)    return 'N';
@@ -32,7 +31,7 @@ char getPieceCharacter(uint64_t square) {
     if (mask & whiteRooks)      return 'R';
     if (mask & whiteQueens)     return 'Q';
     if (mask & whiteKing)       return 'K';
-
+ 
     // check black pieces
     if (mask & blackPawns)      return 'p';
     if (mask & blackKnights)    return 'n';
@@ -44,14 +43,13 @@ char getPieceCharacter(uint64_t square) {
     return '.'; // empty square
 }
 
-
 void printBitboard(uint64_t bitboard) {
 
     for (int rank = 7; rank >= 0; rank--) {
         for (int file = 0; file < 8; file++) {
             int square = rank * 8 + file;
             if ((bitboard >> square) & 1) {
-                cout << "x ";
+	      cout << "x ";
             } else {
                 cout << ". ";
             }
@@ -64,11 +62,11 @@ void printBitboard(uint64_t bitboard) {
 void printGameBoard() {
     for (short rank = 7; rank >= 0; rank--) {
         for (short file = 0; file < 8; file++) {
-            uint64_t square = rank * 8 + file;
+	    uint64_t square = rank * 8 + file;
             char c = getPieceCharacter(square);
             cout << c << " ";
         }
-        cout << endl;
+	std::cout << endl;
     }
 }
 
@@ -80,8 +78,17 @@ uint64_t whitePawnAttacks() {
     return whitePawnsAttack;
 }
 
+uint64_t blackPawnAttacks() {
+  uint64_t blackPawnsAttackLeft = (blackPawns >> 7) & ~FILE_A;
+  uint64_t blackPawnsAttackRight = (blackPawns >> 9) & ~FILE_H;
+
+  uint64_t blackPawnsAttack = blackPawnsAttackLeft | blackPawnsAttackRight;
+  return blackPawnsAttack;
+}
+
 int main(int argc, char *argv[])
 {
-
+    uint64_t blackAttacks = blackPawnAttacks();
+    printBitboard(blackAttacks);
     return 0;
 }
