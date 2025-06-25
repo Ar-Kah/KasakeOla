@@ -4,52 +4,35 @@
 #include <stdint.h>
 
 using namespace std;
-
-// white chesspiece
-uint64_t W_PAWN =   0x000000000000ff00;
-uint64_t W_BISHOP = 0x0000000000000024;
-uint64_t W_KNIGHT = 0x0000000000000042;
-uint64_t W_ROOK =   0X0000000000000081;
-uint64_t W_QUEEN =  0x0000000000000008;
-uint64_t W_KING =   0X0000000000000010;
-  
-// BLACK CHESSPIECES
-uint64_t B_PAWN =   0X00FF000000000000;
-uint64_t B_BISHOP = 0X2400000000000000;
-uint64_t B_KNIGHT = 0x4200000000000000;
-uint64_t B_ROOK =   0x8100000000000000;
-uint64_t B_QUEEN =  0x0800000000000000;
-uint64_t B_KING =   0X1000000000000000;
-
 uint64_t FILE_A = 0x0101010101010101;
 uint64_t FILE_H = 0x8080808080808080;
 uint64_t RANK_2 = 0x000000000000ff00;
 
 // enums
 enum Piece {
-  whitePawns, whiteKinghts, whiteBishops, whiteRooks, whiteQueens, whiteKings,
-  blackPawns, blackKinghts, blackBishops, blackRooks, blackQueens, blackKings,
+  whitePawns, whiteBishops, whiteKnights, whiteRooks, whiteQueens, whiteKings,
+  blackPawns, blackBishops, blackKnights, blackRooks, blackQueens, blackKings,
   numberOfPieces
 };
 
 enum File { a, b, c, d, e, f, g, h };
 
-char getPieceCharacter(uint64_t square) {
+char getPieceCharacter(uint64_t square, const std::vector<uint64_t>& bitboards) {
     uint64_t mask = 1ULL << square;
     // check white pieces
-    if (mask & W_PAWN)      return 'P';
-    if (mask & W_KNIGHT)    return 'N';
-    if (mask & W_BISHOP)    return 'B';
-    if (mask & W_ROOK)      return 'R';
-    if (mask & W_QUEEN)     return 'Q';
-    if (mask & W_KING)       return 'K';
+    if (mask & bitboards.at(Piece::whitePawns))      return 'P';
+    if (mask & bitboards.at(Piece::whiteKnights))    return 'N';
+    if (mask & bitboards.at(Piece::whiteBishops))    return 'B';
+    if (mask & bitboards.at(Piece::whiteRooks))      return 'R';
+    if (mask & bitboards.at(Piece::whiteQueens))     return 'Q';
+    if (mask & bitboards.at(Piece::whiteKings))       return 'K';
     // check black pieces
-    if (mask & B_PAWN)      return 'p';
-    if (mask & B_KNIGHT)    return 'n';
-    if (mask & B_BISHOP)    return 'b';
-    if (mask & B_ROOK)      return 'r';
-    if (mask & B_QUEEN)     return 'q';
-    if (mask & B_KING)       return 'k';
+    if (mask & bitboards.at(Piece::blackPawns))     return 'p';
+    if (mask & bitboards.at(Piece::blackKnights))    return 'n';
+    if (mask & bitboards.at(Piece::blackBishops))    return 'b';
+    if (mask & bitboards.at(Piece::blackRooks))     return 'r';
+    if (mask & bitboards.at(Piece::blackQueens))    return 'q';
+    if (mask & bitboards.at(Piece::blackKings))      return 'k';
 
     return '.'; // empty square
 }
@@ -70,31 +53,15 @@ void printBitboard(uint64_t bitboard) {
     cout << "a b c d e f g h" << endl;
 }
 
-void printGameBoard() {
+void printGameBoard(const std::vector<uint64_t>& bitboards) {
     for (short rank = 7; rank >= 0; rank--) {
         for (short file = 0; file < 8; file++) {
 	    uint64_t square = rank * 8 + file;
-            char c = getPieceCharacter(square);
+            char c = getPieceCharacter(square, bitboards);
             cout << c << " ";
         }
 	std::cout << endl;
     }
-}
-
-uint64_t whitePawnAttacks() {
-    uint64_t whitePawnsAttackLeft = (W_PAWN << 7) & ~FILE_H;
-    uint64_t whitePawnsAttackRight = (W_PAWN << 9) & ~FILE_A;
-
-    uint64_t whitePawnsAttack = whitePawnsAttackLeft | whitePawnsAttackRight;
-    return whitePawnsAttack;
-}
-
-uint64_t blackPawnAttacks() {
-    uint64_t blackPawnsAttackLeft = (B_PAWN >> 7) & ~FILE_A;
-    uint64_t blackPawnsAttackRight = (B_PAWN >> 9) & ~FILE_H;
-
-    uint64_t blackPawnsAttack = blackPawnsAttackLeft | blackPawnsAttackRight;
-    return blackPawnsAttack;
 }
 
 File charToInt(char c) {
@@ -127,30 +94,32 @@ uint64_t whitePawnMove(uint64_t square, std::vector<uint64_t> bitboards) {
     return canMove;
 }
 
-void initAll(std::vector<uint64_t>& bitboards) {
-    bitboards[Piece::whitePawns] = W_PAWN;
-    bitboards[Piece::whiteKinghts] = W_KNIGHT;
-    bitboards[Piece::whiteBishops] = W_BISHOP;
-    bitboards[Piece::whiteRooks] = W_ROOK;
-    bitboards[Piece::whiteQueens] = W_QUEEN;
-    bitboards[Piece::whiteKings] = W_KING;
-
-    // black
-    bitboards[Piece::blackPawns] = B_PAWN;
-    bitboards[Piece::blackKinghts] = B_KNIGHT;
-    bitboards[Piece::blackBishops] = B_BISHOP;
-    bitboards[Piece::blackRooks] = B_ROOK;
-    bitboards[Piece::blackQueens] = B_QUEEN;
-    bitboards[Piece::blackKings] = B_KING;
+std::vector<uint64_t> makePieces() {
     
+    std::vector<uint64_t> bitboards{
+    // white chesspiece
+    0x000000000000ff00,     // pawns
+    0x0000000000000024, // knights
+    0x0000000000000042, // bishops
+    0X0000000000000081, // Rooks
+    0x0000000000000008, // queen
+    0X0000000000000010, // king
+
+    // black pieces
+	0X00FF000000000000, // pawns
+	0X2400000000000000, // knights
+	0x4200000000000000, // bishops
+	0x8100000000000000, // rooks
+	0x0800000000000000, // queen
+	0X1000000000000000, // king
+
+};
+    return bitboards;
 }
 
-
 int main(int argc, char *argv[]) {
-    std::vector<uint64_t> bitboards(Piece::numberOfPieces, 0ULL);
-
-    initAll(bitboards);
-
+    std::vector<uint64_t> bitboards = makePieces();
+    printGameBoard(bitboards);
     
     return 0;
 }
