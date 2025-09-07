@@ -43,7 +43,7 @@ void printBitboard(uint64_t bitboard) {
         for (int file = 0; file < 8; file++) {
             int square = rank * 8 + file;
             if ((bitboard >> square) & 1) {
-	      cout << "x ";
+                cout << "x ";
             } else {
                 cout << ". ";
             }
@@ -56,40 +56,40 @@ void printBitboard(uint64_t bitboard) {
 void printGameBoard(const std::vector<uint64_t>& bitboards) {
     for (short rank = 7; rank >= 0; rank--) {
         for (short file = 0; file < 8; file++) {
-	    uint64_t square = rank * 8 + file;
+            uint64_t square = rank * 8 + file;
             char c = getPieceCharacter(square, bitboards);
             cout << c << " ";
         }
-	std::cout << endl;
+        std::cout << endl;
     }
 }
 
 File charToInt(char c) {
     switch (c) {
-	case 'a': return File::a;
-	case 'b': return File::b;
-	case 'c': return File::c;
-	case 'd': return File::d;
-	case 'e': return File::e;
-	case 'f': return File::f;
-	case 'g': return File::g;
-	case 'h': return File::h;
-	default:
-	    throw std::invalid_argument("Invalid file character");
+        case 'a': return File::a;
+        case 'b': return File::b;
+        case 'c': return File::c;
+        case 'd': return File::d;
+        case 'e': return File::e;
+        case 'f': return File::f;
+        case 'g': return File::g;
+        case 'h': return File::h;
+        default:
+            throw std::invalid_argument("Invalid file character");
     }
 }
 
 uint64_t whitePawnMove(uint64_t square, std::vector<uint64_t> bitboards) {
     uint64_t canMove = 0;
     if (square & RANK_2) {
-	canMove = square << 16;
+        canMove = square << 16;
     }
     uint64_t oneStep = square << 8;
     canMove |= oneStep;
     for (int x = 5; x < 12; x++) {
-	if (canMove & bitboards.at(x)) {
-	    canMove |= ~bitboards.at(x);
-	}
+        if (canMove & bitboards.at(x)) {
+            canMove |= ~bitboards.at(x);
+        }
     }
     return canMove;
 }
